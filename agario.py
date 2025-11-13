@@ -188,7 +188,7 @@ def main():
                     for player_b in players.copy():
                         if player_a not in players or player_b not in players:
                             continue
-                        if player_a == player_b or player_a.team_id == player_b.team_id:
+                        if player_a == player_b:
                             continue
                             
                         dist = get_distance(player_a.x, player_a.y, player_b.x, player_b.y)
