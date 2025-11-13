@@ -5,6 +5,7 @@ import numpy as np
 from colormath.color_objects import sRGBColor, LCHabColor
 from colormath.color_conversions import convert_color
 
+
 # --- Game Settings ---
 SCREEN_WIDTH = 1000  # Game area width
 SCREEN_HEIGHT = 800
@@ -138,10 +139,9 @@ def main():
             players.append(Player(x, y, team_id, color, START_MASS))
 
     # Game State
-    game_state = "playing"
+    game_state = "playing" # Can be "playing", "paused", "victory"
     winning_team_data = None
     
-    # Pre-calculate scoreboard data once for the "frozen" screen
     team_data = {}
     sorted_teams = []
     max_mass = 1
@@ -154,13 +154,20 @@ def main():
                 if event.type == pygame.QUIT:
                     running = False
                 
-                if game_state == "victory":
-                    if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_r:
-                            main()  # Restart
-                            return
-                        if event.key == pygame.K_q:
-                            running = False
+                # Global key presses (work in any game state)
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_q:
+                        running = False
+                    if event.key == pygame.K_r:
+                        main()  # Restart
+                        return
+                    if event.key == pygame.K_p:
+                        # Toggle pause state
+                        if game_state == "playing":
+                            game_state = "paused"
+                        elif game_state == "paused":
+                            game_state = "playing"
+
 
             # --- Game State Logic (Only if playing) ---
             if game_state == "playing":
@@ -188,7 +195,7 @@ def main():
                     for player_b in players.copy():
                         if player_a not in players or player_b not in players:
                             continue
-                        if player_a == player_b:
+                        if player_a == player_b: # allow friendly fire by not considering the player's team
                             continue
                             
                         dist = get_distance(player_a.x, player_a.y, player_b.x, player_b.y)
@@ -235,8 +242,7 @@ def main():
 
 
             # --- Drawing (Runs in ALL states) ---
-            # This draws the game state. When "victory", it draws the *last*
-            # frame of the game, creating the "frozen" background.
+            # Draws the "frozen" game board when paused or victory
             
             screen.fill(BACKGROUND_COLOR)
             
@@ -280,8 +286,8 @@ def main():
                 pygame.draw.rect(screen, color, (SCREEN_WIDTH + 10, current_y + 40, bar_width_proportional, bar_height))
             
             
-            # --- Victory Overlay (Only if victory) ---
-            # This draws ON TOP of the frozen game state
+            # --- Overlays (Pause or Victory) ---
+            
             if game_state == "victory":
                 # Create a semi-transparent overlay
                 overlay = pygame.Surface((TOTAL_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
@@ -309,6 +315,21 @@ def main():
                 
                 prompt_surf = font_main.render("Press 'R' to Restart or 'Q' to Quit", True, TEXT_COLOR_LIGHT)
                 prompt_rect = prompt_surf.get_rect(center=(TOTAL_WIDTH / 2, SCREEN_HEIGHT / 2 + 120))
+                screen.blit(prompt_surf, prompt_rect)
+
+            elif game_state == "paused":
+                # Create a semi-transparent overlay
+                overlay = pygame.Surface((TOTAL_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+                overlay.fill(VICTORY_OVERLAY_COLOR) # Re-using the same overlay color
+                screen.blit(overlay, (0, 0))
+                
+                # Draw "PAUSED" text
+                pause_surf = font_large.render("PAUSED", True, TEXT_COLOR_LIGHT)
+                pause_rect = pause_surf.get_rect(center=(TOTAL_WIDTH / 2, SCREEN_HEIGHT / 2 - 40))
+                screen.blit(pause_surf, pause_rect)
+                
+                prompt_surf = font_main.render("Press 'P' to Resume", True, TEXT_COLOR_LIGHT)
+                prompt_rect = prompt_surf.get_rect(center=(TOTAL_WIDTH / 2, SCREEN_HEIGHT / 2 + 40))
                 screen.blit(prompt_surf, prompt_rect)
 
 
