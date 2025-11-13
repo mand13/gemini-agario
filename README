@@ -2,6 +2,5 @@ TODO
 - make movement update faster but with smaller changes to make it look more natural
 - add active decision making (remove randomness, or maybe as a command-line option)
 - make all the game settings command-line options
-- brainstorm ways to make the game take longer but be more interesting still (I don't want long-winded stale mates with little action but ways to make it visually stimulating and interesting gameplay that lasts longer)
-
-
+- brainstorm ways to make the game take longer but be more interesting still (I don't want long-winded stale mates with little action but ways to make it visually stimulating and interesting gameplay that lasts longer) (maybe ways for the winning team to easily switch or increase the odds of a comeback so the game feels less onesided or like you already know who is going to win, increase the tension)
+- add names to colors
