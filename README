@@ -1,7 +1,7 @@
 TODO
-- Add a button I can click to increase the entire speed of the game (increase all speeds proportionally like food spawn speed, movement speed, etc)
-- Add active timer display
-- Add total game time display on victory screen
-- Add frame rate display
-- Add total frames display
+- make movement update faster but with smaller changes to make it look more natural
+- add active decision making (remove randomness, or maybe as a command-line option)
+- make all the game settings command-line options
+- brainstorm ways to make the game take longer but be more interesting still (I don't want long-winded stale mates with little action but ways to make it visually stimulating and interesting gameplay that lasts longer)
+
 
