@@ -146,9 +146,19 @@ def main():
     sorted_teams = []
     max_mass = 1
     
+    # --- Time and FPS variables ---
+    total_play_time = 0  # Milliseconds
+    last_frame_ticks = pygame.time.get_ticks()
+    fps = 0
+    
     running = True
     try:
         while running:
+            # --- Delta time calculation ---
+            current_ticks = pygame.time.get_ticks()
+            dt_ms = current_ticks - last_frame_ticks
+            last_frame_ticks = current_ticks
+
             # --- Event Handling (Runs in all states) ---
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -171,6 +181,9 @@ def main():
 
             # --- Game State Logic (Only if playing) ---
             if game_state == "playing":
+                # --- Increment active play time ---
+                total_play_time += dt_ms
+
                 # 1. Spawn new food
                 if random.random() < FOOD_SPAWN_RATE and len(food_pellets) < MAX_FOOD:
                     fx = random.randint(0, SCREEN_WIDTH)
@@ -258,9 +271,11 @@ def main():
             pygame.draw.line(screen, DIVIDER_COLOR, (SCREEN_WIDTH, 0), (SCREEN_WIDTH, SCREEN_HEIGHT), 2)
             
             title_surface = font_title.render("Leaderboard", True, TEXT_COLOR_LIGHT)
-            screen.blit(title_surface, (SCREEN_WIDTH + (SCOREBOARD_WIDTH - title_surface.get_width()) // 2, 10))
+            # --- UPDATED: Moved title down to make room for FPS/Timer ---
+            screen.blit(title_surface, (SCREEN_WIDTH + (SCOREBOARD_WIDTH - title_surface.get_width()) // 2, 50))
             
-            y_offset = 50
+            # --- UPDATED: Pushed team list down to follow title ---
+            y_offset = 80 
             bar_max_width = SCOREBOARD_WIDTH - 20
             bar_height = 10
             entry_height = 55
@@ -312,9 +327,20 @@ def main():
                     mass_surf = font_medium.render(f"Final Mass: {win_mass:,.0f}", True, TEXT_COLOR_MUTED)
                     mass_rect = mass_surf.get_rect(center=(TOTAL_WIDTH / 2, SCREEN_HEIGHT / 2 + 50))
                     screen.blit(mass_surf, mass_rect)
+
+                    # --- Display final time ---
+                    total_seconds_win = total_play_time // 1000
+                    minutes_win = total_seconds_win // 60
+                    seconds_win = total_seconds_win % 60
+                    time_win_str = f"Final Time: {minutes_win:02}:{seconds_win:02}"
+                    
+                    time_surf = font_medium.render(time_win_str, True, TEXT_COLOR_MUTED)
+                    time_rect = time_surf.get_rect(center=(TOTAL_WIDTH / 2, SCREEN_HEIGHT / 2 + 100))
+                    screen.blit(time_surf, time_rect)
                 
+                # --- Adjusted y-position ---
                 prompt_surf = font_main.render("Press 'R' to Restart or 'Q' to Quit", True, TEXT_COLOR_LIGHT)
-                prompt_rect = prompt_surf.get_rect(center=(TOTAL_WIDTH / 2, SCREEN_HEIGHT / 2 + 120))
+                prompt_rect = prompt_surf.get_rect(center=(TOTAL_WIDTH / 2, SCREEN_HEIGHT / 2 + 150))
                 screen.blit(prompt_surf, prompt_rect)
 
             elif game_state == "paused":
@@ -332,12 +358,34 @@ def main():
                 prompt_rect = prompt_surf.get_rect(center=(TOTAL_WIDTH / 2, SCREEN_HEIGHT / 2 + 40))
                 screen.blit(prompt_surf, prompt_rect)
 
+            # --- Draw FPS and Timer on top of everything ---
+            # (This location is now clear)
+            
+            # Draw FPS
+            fps_text = f"FPS: {fps:.0f}"
+            fps_surf = font_small.render(fps_text, True, TEXT_COLOR_MUTED)
+            fps_rect = fps_surf.get_rect(topright=(TOTAL_WIDTH - 10, 10))
+            screen.blit(fps_surf, fps_rect)
+            
+            # Draw Timer
+            total_seconds = total_play_time // 1000
+            minutes = total_seconds // 60
+            seconds = total_seconds % 60
+            time_str = f"Time: {minutes:02}:{seconds:02}"
+            
+            time_surf = font_small.render(time_str, True, TEXT_COLOR_MUTED)
+            time_rect = time_surf.get_rect(topright=(TOTAL_WIDTH - 10, 30))
+            screen.blit(time_surf, time_rect)
+
 
             # Update the display
             pygame.display.flip()
 
             # Cap the framerate
             clock.tick(60)
+            
+            # --- Get FPS for next frame's draw ---
+            fps = clock.get_fps()
             
     finally:
         pygame.quit()
